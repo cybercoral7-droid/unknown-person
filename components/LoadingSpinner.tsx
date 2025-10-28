@@ -1,7 +1,10 @@
-
 import React from 'react';
 
-const LoadingSpinner: React.FC = () => (
+interface LoadingSpinnerProps {
+    message: string;
+}
+
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ message }) => (
     <div className="flex flex-col items-center justify-center space-y-4">
         <svg
             className="animate-spin h-12 w-12 text-rose-600"
@@ -23,7 +26,7 @@ const LoadingSpinner: React.FC = () => (
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
         </svg>
-        <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Summoning culinary magic...</p>
+        <p className="text-lg font-medium text-gray-700 dark:text-gray-300">{message}</p>
     </div>
 );
 

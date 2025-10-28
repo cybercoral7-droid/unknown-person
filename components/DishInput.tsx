@@ -1,12 +1,14 @@
-
 import React, { useState } from 'react';
 
 interface DishInputProps {
   onSearch: (query: string) => void;
   isLoading: boolean;
+  placeholder: string;
+  buttonText: string;
+  loadingText: string;
 }
 
-const DishInput: React.FC<DishInputProps> = ({ onSearch, isLoading }) => {
+const DishInput: React.FC<DishInputProps> = ({ onSearch, isLoading, placeholder, buttonText, loadingText }) => {
   const [query, setQuery] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -23,7 +25,7 @@ const DishInput: React.FC<DishInputProps> = ({ onSearch, isLoading }) => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g., Spaghetti Carbonara"
+          placeholder={placeholder}
           className="w-full py-4 px-6 text-gray-700 dark:text-gray-200 bg-transparent focus:outline-none placeholder-gray-400"
           disabled={isLoading}
         />
@@ -32,7 +34,7 @@ const DishInput: React.FC<DishInputProps> = ({ onSearch, isLoading }) => {
           className="bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 px-8 rounded-full disabled:bg-rose-400 disabled:cursor-not-allowed transition-colors duration-300 m-1"
           disabled={isLoading}
         >
-          {isLoading ? 'Searching...' : 'Search'}
+          {isLoading ? loadingText : buttonText}
         </button>
       </div>
     </form>

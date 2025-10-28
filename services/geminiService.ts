@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Dish } from '../types';
 
@@ -37,9 +36,16 @@ const dishDetailsSchema = {
   required: ['name', 'description', 'ingredients', 'recipe'],
 };
 
-export const fetchDishDetails = async (dishName: string): Promise<Dish> => {
+const languageMap: { [key: string]: string } = {
+  en: 'English',
+  hi: 'Hindi',
+  ur: 'Urdu',
+};
+
+export const fetchDishDetails = async (dishName: string, language: string): Promise<Dish> => {
     try {
-        const prompt = `Provide detailed information for the dish: "${dishName}". Your response must be in JSON format.`;
+        const targetLanguage = languageMap[language] || 'English';
+        const prompt = `Provide detailed information for the dish: "${dishName}". Your response, including the name, description, ingredients, and recipe, must be in the ${targetLanguage} language. The entire response must be in JSON format.`;
 
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-pro',

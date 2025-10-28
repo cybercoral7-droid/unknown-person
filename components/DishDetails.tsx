@@ -4,19 +4,25 @@ import CopyButton from './CopyButton';
 
 interface DishDetailsProps {
   dish: Dish;
+  translations: {
+    ingredients: string;
+    recipe: string;
+    copy: string;
+    copied: string;
+  }
 }
 
-const SectionCard: React.FC<{ title: string; children: React.ReactNode; contentToCopy: string; }> = ({ title, children, contentToCopy }) => (
+const SectionCard: React.FC<{ title: string; children: React.ReactNode; contentToCopy: string; translations: { copy: string; copied: string; } }> = ({ title, children, contentToCopy, translations }) => (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
         <div className="flex justify-between items-center mb-4 border-b-2 border-rose-200 dark:border-gray-700 pb-2">
             <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{title}</h3>
-            <CopyButton textToCopy={contentToCopy} />
+            <CopyButton textToCopy={contentToCopy} copyText={translations.copy} copiedText={translations.copied} />
         </div>
         {children}
     </div>
 );
 
-const DishDetails: React.FC<DishDetailsProps> = ({ dish }) => {
+const DishDetails: React.FC<DishDetailsProps> = ({ dish, translations }) => {
     const ingredientsText = dish.ingredients.join('\n');
     const recipeText = dish.recipe.map((step, index) => `${index + 1}. ${step}`).join('\n');
 
@@ -28,7 +34,7 @@ const DishDetails: React.FC<DishDetailsProps> = ({ dish }) => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <SectionCard title="Ingredients" contentToCopy={ingredientsText}>
+                <SectionCard title={translations.ingredients} contentToCopy={ingredientsText} translations={translations}>
                     <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
                         {dish.ingredients.map((ingredient, index) => (
                             <li key={index}>{ingredient}</li>
@@ -36,7 +42,7 @@ const DishDetails: React.FC<DishDetailsProps> = ({ dish }) => {
                     </ul>
                 </SectionCard>
 
-                <SectionCard title="Recipe" contentToCopy={recipeText}>
+                <SectionCard title={translations.recipe} contentToCopy={recipeText} translations={translations}>
                     <ol className="list-decimal list-inside space-y-3 text-gray-700 dark:text-gray-300">
                         {dish.recipe.map((step, index) => (
                             <li key={index} className="pl-2">{step}</li>
