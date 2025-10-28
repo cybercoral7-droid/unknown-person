@@ -9,42 +9,71 @@ import ImageGallery from './components/ImageGallery';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
 import LanguageSelector from './components/LanguageSelector';
+import ImageGallerySkeleton from './components/ImageGallerySkeleton';
+import ThemeSwitcher from './components/ThemeSwitcher';
+
+type Theme = 'light' | 'dark';
 
 const App: React.FC = () => {
   const [dishQuery, setDishQuery] = useState<string>('');
   const [dishDetails, setDishDetails] = useState<Dish | null>(null);
   const [dishImages, setDishImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isImagesLoading, setIsImagesLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<keyof typeof translations>('en');
+  const [theme, setTheme] = useState<Theme>(() => {
+    const savedTheme = localStorage.getItem('theme') as Theme;
+    if (savedTheme) {
+      return savedTheme;
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
 
   useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'ur' ? 'rtl' : 'ltr';
   }, [language]);
 
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const handleThemeToggle = () => {
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  };
+
   const t = translations[language];
 
   const handleSearch = useCallback(async (query: string) => {
     setIsLoading(true);
+    setIsImagesLoading(false);
     setError(null);
     setDishDetails(null);
     setDishImages([]);
     setDishQuery(query);
 
     try {
-      // Image prompt can remain in English for better results
-      const [details, images] = await Promise.all([
-        fetchDishDetails(query, language),
-        fetchDishImages(query)
-      ]);
-      
+      // Fetch details first and display them immediately.
+      const details = await fetchDishDetails(query, language);
       setDishDetails(details);
+      setIsLoading(false);
+
+      // Then fetch images in the background, using the detailed description for accuracy.
+      setIsImagesLoading(true);
+      const images = await fetchDishImages(details.name, details.description);
       setDishImages(images);
+      setIsImagesLoading(false);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
-    } finally {
       setIsLoading(false);
+      setIsImagesLoading(false);
     }
   }, [language]);
 
@@ -60,9 +89,8 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 sm:p-6 md:p-8 transition-colors duration-300">
       <div className="container mx-auto max-w-7xl">
         
-        <div className="absolute top-4 right-4">
-            {/* FIX: The `setLanguage` state setter from `useState` is not directly assignable to the `onLangChange` prop because `setLanguage`
-                is a `Dispatch` type that can also accept a function updater. Wrapping it in an arrow function resolves the type mismatch. */}
+        <div className="absolute top-4 right-4 flex items-center space-x-2">
+            <ThemeSwitcher theme={theme} onToggle={handleThemeToggle} />
             <LanguageSelector currentLang={language} onLangChange={(lang) => setLanguage(lang)} />
         </div>
 
@@ -85,9 +113,11 @@ const App: React.FC = () => {
           <div className="mt-12">
             {isLoading && <LoadingSpinner message={t.loadingMessage} />}
             {error && <ErrorMessage message={error} title={t.errorTitle} />}
-            {!isLoading && !error && dishDetails && dishImages.length > 0 && (
+            
+            {!isLoading && !error && dishDetails && (
               <div className="space-y-12 animate-fade-in">
-                <ImageGallery images={dishImages} dishName={dishDetails.name} />
+                {isImagesLoading && <ImageGallerySkeleton />}
+                {dishImages.length > 0 && <ImageGallery images={dishImages} dishName={dishDetails.name} />}
                 <DishDetails dish={dishDetails} translations={{
                     ingredients: t.ingredients,
                     recipe: t.recipe,
@@ -96,6 +126,7 @@ const App: React.FC = () => {
                 }} />
               </div>
             )}
+            
             {!isLoading && !error && !dishDetails && (
               <WelcomeMessage />
             )}

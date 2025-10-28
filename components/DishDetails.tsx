@@ -1,6 +1,7 @@
 import React from 'react';
 import { Dish } from '../types';
 import CopyButton from './CopyButton';
+import YouTubeLogo from './YouTubeLogo';
 
 interface DishDetailsProps {
   dish: Dish;
@@ -25,11 +26,24 @@ const SectionCard: React.FC<{ title: string; children: React.ReactNode; contentT
 const DishDetails: React.FC<DishDetailsProps> = ({ dish, translations }) => {
     const ingredientsText = dish.ingredients.join('\n');
     const recipeText = dish.recipe.map((step, index) => `${index + 1}. ${step}`).join('\n');
+    const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(dish.name + ' recipe')}`;
 
     return (
         <div className="space-y-8">
             <div className="text-center">
-                <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-2">{dish.name}</h2>
+                <div className="flex justify-center items-center gap-3 mb-2 flex-wrap">
+                    <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">{dish.name}</h2>
+                    <a
+                        href={youtubeSearchUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`Search for "${dish.name}" on YouTube`}
+                        aria-label={`Search for "${dish.name}" on YouTube`}
+                        className="flex-shrink-0"
+                    >
+                        <YouTubeLogo />
+                    </a>
+                </div>
                 <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">{dish.description}</p>
             </div>
 
